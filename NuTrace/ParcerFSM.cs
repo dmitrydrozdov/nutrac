@@ -1,0 +1,120 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+namespace NuTrace
+{
+    public class ParcerFSM
+    {
+        //workspace
+        public const string CommentLine1 = "-- as demonstrated by the following execution sequence";
+        public const string CommentLine2 = "Trace Description: BMC Counterexample ";
+        public const string CommentLine3 = "Trace Type: Counterexample ";
+        public const string LoopBeginLine = "-- Loop starts here";
+
+        private string _lastReadString;
+        public readonly Regex CounterexampleBeginRegex = new Regex(@"-- specification\s*(.*)\s*is\s*(\w*)");
+        public readonly Regex StateRegex = new Regex(@"->\s+State:\s((\d|\.)+)\s+<-");
+        public readonly Regex VariableRegex = new Regex(@"((\w|\.)+)\s=\s(\w+)");
+
+        public readonly TextReader InStream;
+        public readonly Queue<Object> OutQueue;
+        public string LastReadString
+        {
+            get { return _lastReadString; }
+        }
+
+        public bool EndReached
+        {
+            get { return (_lastReadString == "NuSMV > "); }
+        }
+        public bool CounterexampleBeginReached
+        {
+            get
+            {
+                return (CounterexampleBeginRegex.Match(_lastReadString).Success);
+            }
+        }
+        public bool StateReached
+        {
+            get
+            {
+                return (StateRegex.Match(_lastReadString).Success);
+            }
+        }
+        public bool VariableReached
+        {
+            get
+            {
+                return (VariableRegex.Match(_lastReadString).Success);
+            }
+        }
+        public bool LoopBeginReached
+        {
+            get
+            {
+                return (_lastReadString == LoopBeginLine);
+            }
+        }
+        public bool CommentLine1Reached
+        {
+            get
+            {
+                return (_lastReadString == CommentLine1);
+            }
+        }
+        public bool CommentLine2Reached
+        {
+            get
+            {
+                return (_lastReadString == CommentLine2);
+            }
+        }
+        public bool CommentLine3Reached
+        {
+            get
+            {
+                return (_lastReadString == CommentLine3);
+            }
+        }
+        //end workspace
+
+        private IState _currentState;
+        private bool _run;
+
+        public ParcerFSM(TextReader inStream, Queue<object> outQueue)
+        {
+            InStream = inStream;
+            OutQueue = outQueue;
+            _run = true;
+        }
+
+        public string ReadNextLine()
+        {
+            _lastReadString = InStream.ReadLine();
+            return _lastReadString;
+        }
+
+        public void Stop()
+        {
+            _run = false;
+        }
+        public void Run()
+        {
+            while (_run)
+            {
+                _currentState.Do();
+            }
+        }
+        public void EnterState(IState state)
+        {
+            if (_currentState!=null) _currentState.Exit();
+            _currentState = state;
+            _currentState.Enter();
+        }
+    }
+}
