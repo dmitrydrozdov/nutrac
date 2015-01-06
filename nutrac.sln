@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nutrac", "nutrac\nutrac.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuTrace", "NuTrace\NuTrace.csproj", "{0F1E30BC-5E94-4824-841C-0DE4CEE49270}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player", "Player\Player.csproj", "{CAA81F5F-3811-466F-9E9A-8D541AB98DA8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{0F1E30BC-5E94-4824-841C-0DE4CEE49270}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F1E30BC-5E94-4824-841C-0DE4CEE49270}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F1E30BC-5E94-4824-841C-0DE4CEE49270}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAA81F5F-3811-466F-9E9A-8D541AB98DA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAA81F5F-3811-466F-9E9A-8D541AB98DA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAA81F5F-3811-466F-9E9A-8D541AB98DA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAA81F5F-3811-466F-9E9A-8D541AB98DA8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
