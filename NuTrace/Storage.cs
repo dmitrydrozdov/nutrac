@@ -53,15 +53,28 @@ namespace NuTrace
 
     public class NuTraceVariable
     {
-        public readonly string Variable;
-        public readonly string Value;
-        public readonly string StateLabel;
+        private string _variable;
+        private string _value;
+        private string _stateLabel;
+
+        public string Variable
+        {
+            get { return _variable; }
+        }
+        public string Value
+        {
+            get { return _value; }
+        }
+        public string StateLabel
+        {
+            get { return _stateLabel; }
+        }
 
         public NuTraceVariable(string variable, string value, string stateLabel)
         {
-            Variable = variable;
-            Value = value;
-            StateLabel = stateLabel;
+            _variable = variable;
+            _value = value;
+            _stateLabel = stateLabel;
         }
     }
 }
