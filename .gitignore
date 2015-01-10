@@ -2,3 +2,7 @@ NuTrace/obj/
 NuTrace/bin/
 nutrac/obj/
 nutrac/bin/
+OPCServerPluginDLL/bin/
+OPCServerPluginDLL/obj/
+Player/obj/
+Player/bin/Debug/opcserverconfig.xml
