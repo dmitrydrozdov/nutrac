@@ -13,7 +13,7 @@
 // KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
 //
-// Copyright (C) 2003-07 Advosol Inc.    (www.advosol.com)
+// Copyright (C) 2003-08 Advosol Inc.    (www.advosol.com)
 // All rights reserved.
 // ---------------------------------------------------------------------------
 using System;
@@ -271,14 +271,14 @@ namespace NSPlugin
    public enum ClientUpdateHandlingMode
    {
       /// <summary>
-      /// In this mode the update handling is optimized for troughput (many value changes).
+      /// (0)  In this mode the update handling is optimized for troughput (many value changes).
       /// The client update thread periodically checks the cache for all items in active groups.
       /// This handling is optimal if there are up to hundreds of items in the client groups and
       /// there are rather many value changes.
       /// </summary>
       ManyChanges = 0,
       /// <summary>
-      /// In this mode the update handling is optimized for client groups with a large number of items.
+      /// (1)  In this mode the update handling is optimized for client groups with a large number of items.
       /// The cache update handler writes changes items in a queue for each client group.
       /// The client update thread transfers the values of the queued items to the client.
       /// This mode is optimal if there are a large number of items in the client groups but 
@@ -297,14 +297,14 @@ namespace NSPlugin
    public enum ExeStartMode
    {
       /// <summary>
-      /// The generic server initalizes but doesn't call the plugin initialization methods 
+      /// (0)  The generic server initalizes but doesn't call the plugin initialization methods 
       /// GetServerParameters and CreateServerItems before the first client connects.
       /// The startup behavior allows e.g. a debugger to be attached before the normal server 
       /// operation starts.
       /// </summary>
       Partial = 0,
       /// <summary>
-      /// The server starts completely up without waiting for a client to connect. 
+      /// (1)  The server starts completely up without waiting for a client to connect. 
       /// The server customization can be debugged without a client having to connect.
       /// </summary>
       Full = 1
@@ -318,12 +318,12 @@ namespace NSPlugin
    public enum WriteCacheUpdateHandlingMode
    {
       /// <summary>
-      /// The cache is updated in the generic server after returning from the customization
+      /// (0)  The cache is updated in the generic server after returning from the customization
       /// WiteItems method. Items with write error are not updated in the cache.
       /// </summary>
       GenericServer = 0,
       /// <summary>
-      /// The generic server does NOT update the cache. The customization module has to update
+      /// (1)  The generic server does NOT update the cache. The customization module has to update
       /// the cache by executing the SetItemValue callback method for each written item.
       /// </summary>
       Custom = 1,
@@ -336,15 +336,15 @@ namespace NSPlugin
    public enum ValidateMode
    {
       /// <summary>
-      /// The plug-in ValidateItems method is called for items that are not found in the generic server cache.
+      /// (0)  The plug-in ValidateItems method is called for items that are not found in the generic server cache.
       /// </summary>
       UnknownItems = 0,
       /// <summary>
-      /// The plug-in ValidateItems method is NEVER called.
+      /// (1)  The plug-in ValidateItems method is NEVER called.
       /// </summary>
       Never = 1,
       /// <summary>
-      /// The plug-in ValidateItems method is ALWAYS called. 
+      /// (2)  The plug-in ValidateItems method is ALWAYS called. 
       /// </summary>
       Always = 2
    }
@@ -356,31 +356,31 @@ namespace NSPlugin
    public enum ValidateReason
    {
       /// <summary>
-      /// Client calls OPC DA V2 ValidateItems
+      /// (0)  Client calls OPC DA V2 ValidateItems
       /// </summary>
       ValidateItems = 0,
       /// <summary>
-      /// Client calls OPC DA V2 AddItems resp. Subscribe in XML DA server
+      /// (1)  Client calls OPC DA V2 AddItems resp. Subscribe in XML DA server
       /// </summary>
       AddItems = 1,
       /// <summary>
-      /// Client call OPC DA V3 ItemIO Read
+      /// (2)  Client call OPC DA V3 ItemIO Read
       /// </summary>
       Read = 2,
       /// <summary>
-      /// Client call OPC DA V3 ItemIO WriteVQT
+      /// (3)  Client call OPC DA V3 ItemIO WriteVQT
       /// </summary>
       Write = 3,
       /// <summary>
-      /// Client call OPC DA V2 ItemIO QueryAvailableProperties
+      /// (4)  Client call OPC DA V2 ItemIO QueryAvailableProperties
       /// </summary>
       QueryAvailableProperties = 4,
       /// <summary>
-      /// Client call OPC DA V2 or XML DA GetItemProperties
+      /// (5)  Client call OPC DA V2 or XML DA GetItemProperties
       /// </summary>
       GetItemProperties = 5,
       /// <summary>
-      /// Client call OPC DA V3 GetProperties
+      /// (6)  Client call OPC DA V3 GetProperties
       /// </summary>
       GetPropertiesV3 = 6,
    }
@@ -394,12 +394,12 @@ namespace NSPlugin
    public enum BROWSEMODE
    {
       /// <summary>
-      /// Browse calls are handled in the generic server and return the item/branches that
+      /// (0)  Browse calls are handled in the generic server and return the item/branches that
       /// are defined in the cache.
       /// </summary>
       REAL		   = 0,
       /// <summary>
-      /// Browse calls are handled in the plug-in and typically return all items that could
+      /// (1)  Browse calls are handled in the plug-in and typically return all items that could
       /// be dynamically added to the cache.
       /// </summary>
       VIRTUAL		= 2
@@ -415,11 +415,11 @@ namespace NSPlugin
    public enum EventBrowseType
    {
       /// <summary>
-      /// The filter criteria is applied to areas.
+      /// (1)  The filter criteria is applied to areas.
       /// </summary>
       Area	= 1,
       /// <summary>
-      /// The filter criteria is applied to event sources.
+      /// (2)  The filter criteria is applied to event sources.
       /// </summary>
       Source	= 2
    }
@@ -524,6 +524,7 @@ namespace NSPlugin
       public const int OPC_E_INVALIDTIME			= unchecked( (int)0xC0040204 );
       public const int OPC_E_BUSY      			= unchecked( (int)0xC0040205 );
       public const int OPC_E_NOINFO    			= unchecked( (int)0xC0040206 );
+      public const int OPC_E_INVALIDCONTINUATIONPOINT = unchecked((int)0xC0040403);
 
       public const int E_NOTIMPL					   = unchecked( (int)0x80004001 );		// winerror.h
       public const int E_NOINTERFACE				= unchecked( (int)0x80004002 );
@@ -938,6 +939,25 @@ namespace NSPlugin
    /// </summary>
    public class GenericServer
    {
+      public GenericServer()
+      {
+         if( TraceLog == null )
+         {
+            object val;
+            try
+            {
+               AppSettingsReader ar = new AppSettingsReader();
+               val = ar.GetValue( "LogPath", typeof(string) );
+               if( (val != null) && (val.ToString().ToLower().Trim() != "disable") )
+                  TraceLog =  val.ToString() ;
+            }
+            catch      // file or definition not found
+            {}
+         }
+         if (TraceLog != null )
+            LogFile.Init( TraceLog );
+      }
+
 
 
       //=======================================================================================
@@ -1156,7 +1176,7 @@ namespace NSPlugin
       //----------------------------------------------------------------------
       /// <summary>
       /// Generic server callback method. Supported only by the Professional Edition generic server V5.1 or newer.<br/>
-      /// Get information about all server instances or the requested server instance only. 
+      /// Get information about all or only the requested server instances. 
       /// This information may be used to identify the client application, especially when the 
       /// client application defines a name using the SetClientName OPC method.<br/>
       /// Be aware the the client name cannot yet be defined during the instance creation 
@@ -1199,7 +1219,7 @@ namespace NSPlugin
       /// 	<para>Get information about the specified item from the generic server
       ///     cache.</para>
       /// </summary>
-      /// <returns>Always returns S_OK</returns>
+      /// <returns>Returns 0xC0040007 if the item doesn't exist, otherwise S_OK</returns>
       /// <param name="itemID">Fully qualifid name of the item to be queried.</param>
       /// <param name="itemInfo">Item definition and status information</param>
       public static int GetItemInfo( string itemID, out CacheItemInfo itemInfo )
@@ -1227,22 +1247,22 @@ namespace NSPlugin
 
 
       //-----------------------------------------------------  callback methods
-      static private AddItem            cbAddItem ;
-      static private DeleteItem         cbDeleteItem ;
-      static private SetServerState     cbSetServerState ;
-      static private ShutDownRequest    cbShutDownRequest ;
-      static private SetItemValue       cbSetItemValue ;
-      static private GetRefreshNeed     cbGetRefreshNeed ;
-      static private GetServerInfo      cbGetServerInfo ;
-      static private GetItemInfo        cbGetItemInfo;
+      static internal AddItem cbAddItem;
+      static private DeleteItem cbDeleteItem;
+      static private SetServerState cbSetServerState;
+      static private ShutDownRequest cbShutDownRequest;
+      static private SetItemValue cbSetItemValue;
+      static private GetRefreshNeed cbGetRefreshNeed;
+      static private GetServerInfo cbGetServerInfo;
+      static private GetItemInfo cbGetItemInfo;
       static private GetServerInstanceInfo cbGetServerInstanceInfo;
 
       //------------------------------------------------------- Mutex definitions
-      static private Mutex              mtxSetVal = new Mutex(false);
+      static private Mutex             mtxSetVal = new Mutex(false);
       
       //------------------------------------------------------- DA Item configuration
-      static internal SrvRegDef         DAServerDef ;
-      static internal string            TraceLog = null;
+      static internal SrvRegDef                  DAServerDef ;
+      static internal string                     TraceLog = null;
 
 
 
@@ -1368,6 +1388,9 @@ namespace NSPlugin
       /// </remarks>
       public SrvRegDef GetServerRegistryDef()
       {
+         if( TraceLog != null )
+            LogFile.Write( "GetServerRegistryDef" );
+   
          // each server needs unique CLSID ProgIG. 
          // This method must be overloaded or the config file have unique definitions.
          // Default settings:
@@ -1390,7 +1413,7 @@ namespace NSPlugin
          }
          catch
          {}
-         if( val != null)	
+         if( val != null)
             DAServerDef.ClsidServer = val.ToString();
 
          //------- Application CLSID
@@ -1401,7 +1424,7 @@ namespace NSPlugin
          }
          catch
          {}
-         if( val != null)	
+         if( val != null)
             DAServerDef.ClsidApp = val.ToString();
 
          //------- Server ProgID
@@ -1412,7 +1435,7 @@ namespace NSPlugin
          }
          catch
          {}
-         if( val != null)	
+         if( val != null)
             DAServerDef.PrgidServer = val.ToString();
 
          //------- Server ProgID current version
@@ -1423,7 +1446,7 @@ namespace NSPlugin
          }
          catch
          {}
-         if( val != null)	
+         if( val != null)
             DAServerDef.PrgidCurrServer = val.ToString();
 
          //------- Server friendly name
@@ -1434,7 +1457,7 @@ namespace NSPlugin
          }
          catch
          {}
-         if( val != null)	
+         if( val != null)
             DAServerDef.NameServer = val.ToString();
 
          //------- Server friendly name current version
@@ -1445,7 +1468,7 @@ namespace NSPlugin
          }
          catch
          {}
-         if( val != null)	
+         if( val != null)
             DAServerDef.NameCurrServer = val.ToString();
 
          //------- Company name
@@ -1456,9 +1479,11 @@ namespace NSPlugin
          }
          catch
          {}
-         if( val != null)	
+         if( val != null)
             DAServerDef.CompanyName = val.ToString();
 
+         if( TraceLog != null )
+            LogFile.Write( "DA ProgID = " + DAServerDef.PrgidServer );
          return DAServerDef;
       }
 
@@ -1503,6 +1528,9 @@ namespace NSPlugin
       /// </remarks>
       public SrvRegDef GetAEServerRegistryDef()
       {
+         if( TraceLog != null )
+            LogFile.Write( "GetAEServerRegistryDef" );
+
          SrvRegDef Def = new SrvRegDef();
          // each server needs unique CLSID ProgIG. 
          // This method must be overloaded or the config file have unique definitions.
@@ -1570,6 +1598,8 @@ namespace NSPlugin
          if( val != null)	
             Def.NameCurrServer = val.ToString() ;
 
+         if( TraceLog != null )
+            LogFile.Write( "AE ProgID = " + DAServerDef.PrgidServer );
          return Def ;
       }
 
@@ -1640,6 +1670,9 @@ namespace NSPlugin
       /// </param>
       public int GetServerParameters( out int UpdatePeriod, out int BrowseMode, out int validateMode, out char BranchDelemitter  ) 
       {
+         if( TraceLog != null )
+            LogFile.Write( "GetServerParameters" );
+
          // Default Values
          UpdatePeriod = 100 ;		            // ms
          BrowseMode = (int)BROWSEMODE.REAL ;        // browse the real address space (generic part internally)
@@ -1741,8 +1774,8 @@ namespace NSPlugin
       ///     Custom (1) --&gt;</em></para>
       /// </param>
       /// <param name="exeStartupMode">Determines how the server starts when the EXE file is executed. 
-      /// This definitin has no effect when DCOm starts the server due to a client connect.
-      /// The possible values are defined in the enumerator exeStartupMode.</param>
+      /// This definitin has no effect when DCOM starts the server due to a client connect.
+      /// The possible values are defined in the enumerator ExeStartMode.</param>
       /// <param name="notYetUsed2">Can be used later without having to change the DLL interface</param>
       /// <param name="notYetUsed3">Can be used later without having to change the DLL interface</param>
       /// <param name="notYetUsed4">Can be used later without having to change the DLL interface</param>
@@ -1798,7 +1831,7 @@ namespace NSPlugin
          try
          {
             val = null;
-            val = ar.GetValue("ExeStartupMode", typeof(string));
+            val = ar.GetValue("ExeStartMode", typeof(string));
             if (val != null)
             {
                if (val.ToString().ToUpper() == "FULL")
@@ -1978,7 +2011,8 @@ namespace NSPlugin
       /// - return error for all or some items
       /// </summary>
       /// <param name="FullItemId">[in] string array with the names of the items to be validated</param>
-      /// <param name="reason">ValidateReason enumerator indicating why the method is called</param>
+      /// <param name="reason">ValidateReason enumerator indicating why the method is called. 
+      /// See ValidateReason enumerator for valid values.</param>
       /// <param name="err">HRESULTS array with success/error code for each requested item</param>
       /// <returns>the number of successfully added items and/or accessible items.</returns>
       public int ValidateItems( string[] FullItemId, int reason, out int[] err )

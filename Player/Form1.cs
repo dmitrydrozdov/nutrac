@@ -11,7 +11,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 using System.Xml.Serialization;
+using ConfigBuilder;
 using NuTrace;
 
 namespace Player
@@ -132,7 +134,7 @@ namespace Player
         {
             splitContainer3.Panel2Collapsed = false;
 
-            IPHostEntry hostEntry = Dns.GetHostEntry("localhost");
+            /*IPHostEntry hostEntry = Dns.GetHostEntry("localhost");
             int port = 64700;
 
             foreach (IPAddress ipAddress in hostEntry.AddressList)
@@ -149,8 +151,8 @@ namespace Player
                     s = tmpSocket;
                     break;
                 }
-            }
-            writeOpcServerConfig("opcserverconfig.xml");
+            }*/
+            writeOpcServerConfig("DANSrv.Items.xml");
             _startOpcServer();
 
             stopOpcServerButton.Enabled = true;
@@ -199,7 +201,7 @@ namespace Player
 
         private void writeOpcServerConfig(string fileName)
         {
-            OPCServerConfig opcServerConfig = new OPCServerConfig();
+            /*OPCServerConfig opcServerConfig = new OPCServerConfig();
             List<string> inputsList = new List<string>();
             List<string> outputsList = new List<string>();
 
@@ -220,12 +222,129 @@ namespace Player
             opcServerConfig.InputVariables = inputsList;
             opcServerConfig.OutputVariables = outputsList;
             opcServerConfig.SocketHost = "localhost";
-            opcServerConfig.SocketPort = 11000;
+            opcServerConfig.SocketPort = 11000;*/
 
-            XmlSerializer ser = new XmlSerializer(typeof(OPCServerConfig), "");
-            StreamWriter writer = new StreamWriter(fileName);
-            ser.Serialize(writer, opcServerConfig);
-            writer.Close();
+            ConfigBuilder.DefinitionList serverInemsDeflist = new ConfigBuilder.DefinitionList();
+            {
+                serverInemsDeflist.BranchSeperatorChar = '.';
+                ConfigBuilder.BranchElement root = new BranchElement();
+                {
+                    root.name = "CIROS Connector";
+                    ConfigBuilder.ConfigDefs defaultBranchConfig = new ConfigDefs();
+                    defaultBranchConfig.activeDef = true;
+                    defaultBranchConfig.accRightSpecified = false;
+                    defaultBranchConfig.dataTypeSpecified = false;
+                    defaultBranchConfig.qualitySpecified = false;
+                    defaultBranchConfig.signalTypeSpecified = false;
+                    defaultBranchConfig.scanRateSpecified = false;
+                    defaultBranchConfig.deviceIDSpecified = false;
+                    defaultBranchConfig.deviceAddrSpecified = false;
+                    defaultBranchConfig.deviceSubAddrSpecified = false;
+                    defaultBranchConfig.user1Specified = false;
+                    defaultBranchConfig.user2Specified = false;
+                    root.branchDefs = defaultBranchConfig;
+
+                    /*ItemElement dummyItem = new ItemElement();
+                    {
+                        dummyItem.name = "dummyItem";
+                        dummyItem.handle = 0;
+                        dummyItem.itemDefs = new ConfigDefs();
+                        dummyItem.Value = Convert.ToInt32(0);
+                        dummyItem.itemDefs.dataType = drvtypes.Type.SHORT;
+                        dummyItem.itemDefs.activeDef = true;
+                        dummyItem.itemDefs.accRightSpecified = false;
+
+                        dummyItem.itemDefs.dataTypeSpecified = true;
+                        dummyItem.itemDefs.qualitySpecified = false;
+                        dummyItem.itemDefs.signalTypeSpecified = false;
+                        dummyItem.itemDefs.scanRateSpecified = false;
+                        dummyItem.itemDefs.deviceIDSpecified = false;
+                        dummyItem.itemDefs.deviceAddrSpecified = false;
+                        dummyItem.itemDefs.deviceSubAddrSpecified = false;
+                        dummyItem.itemDefs.user1Specified = false;
+                        dummyItem.itemDefs.user2Specified = false;
+                    }
+                    root.items = new ItemElement[1];
+                    root.items[0] = dummyItem;*/
+                    
+                    if (inputVars != null)
+                    {
+                        root.subBranches = new BranchElement[1]; //TODO: 2
+                        root.subBranches[0] = new BranchElement();
+                        root.subBranches[0].name = "Inputs";
+                        {
+                            ConfigBuilder.ConfigDefs branchConfig = new ConfigDefs();
+                            branchConfig.activeDef = true;
+                            branchConfig.accRightSpecified = true;
+                            branchConfig.accRight = OPCAccess.READWRITEABLE;
+                            branchConfig.dataTypeSpecified = false;
+                            branchConfig.qualitySpecified = true;
+                            branchConfig.quality = OPCQuality.GOOD;
+                            branchConfig.signalTypeSpecified = false;
+                            branchConfig.scanRate = 100;
+                            branchConfig.scanRateSpecified = true;
+                            branchConfig.deviceIDSpecified = false;
+                            branchConfig.deviceAddrSpecified = false;
+                            branchConfig.deviceSubAddrSpecified = false;
+                            branchConfig.user1Specified = false;
+                            branchConfig.user2Specified = false;
+
+                            root.subBranches[0].branchDefs = branchConfig;
+                        }
+
+                        root.subBranches[0].items = new ItemElement[inputVars.Count];
+                        int i = 0;
+                        foreach (NuTraceVariable inputVar in inputVars)
+                        {
+                            ItemElement element = new ItemElement();
+                            {
+                                element.name = inputVar.Variable;
+                                element.handle = i+1;
+                                element.itemDefs = new ConfigDefs();
+                                try
+                                {
+                                    element.Value = Convert.ToInt32(inputVar.Value);
+                                    element.itemDefs.dataType = drvtypes.Type.SHORT;
+                                }
+                                catch (FormatException e)
+                                {
+                                    element.Value = Convert.ToBoolean(inputVar.Value);
+                                    element.itemDefs.dataType = drvtypes.Type.BOOLEAN;
+                                }
+                                element.itemDefs.activeDef = true;
+                                element.itemDefs.accRightSpecified = false;
+                                
+                                element.itemDefs.dataTypeSpecified = true;
+                                element.itemDefs.qualitySpecified = false;
+                                element.itemDefs.signalTypeSpecified = false;
+                                element.itemDefs.scanRateSpecified = false;
+                                element.itemDefs.deviceIDSpecified = false;
+                                element.itemDefs.deviceAddrSpecified = false;
+                                element.itemDefs.deviceSubAddrSpecified = false;
+                                element.itemDefs.user1Specified = false;
+                                element.itemDefs.user2Specified = false;
+
+                            }
+                            root.subBranches[0].items[i++] = element;
+                        }
+                    }
+                }
+                serverInemsDeflist.DefinitionsRoot = root;
+            }
+
+            XmlSerializer ser = new XmlSerializer(typeof(ConfigBuilder.DefinitionList));
+            StringBuilder sb = new StringBuilder();
+            using (TextWriter writer = new StringWriter(sb))
+            {
+                ser.Serialize(writer, serverInemsDeflist);
+            }
+
+            sb.Replace("xsi:nil=\"true\" ", ""); // hack removing xsi:nil="true"
+
+            StreamWriter sw = new StreamWriter(fileName);
+            sw.Write(sb);
+            //ser.Serialize(writer, serverInemsDeflist);
+            sw.Close();
         }
 
         private void stopOpcServerButton_Click(object sender, EventArgs e)
