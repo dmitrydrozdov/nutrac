@@ -61,6 +61,8 @@
             this.stopOpcServerButton = new System.Windows.Forms.Button();
             this.startOpcServer = new System.Windows.Forms.Button();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.panel6 = new System.Windows.Forms.Panel();
+            this.treeView1 = new System.Windows.Forms.TreeView();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.messageRichTextBox = new System.Windows.Forms.RichTextBox();
@@ -82,6 +84,7 @@
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            this.panel6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).BeginInit();
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
@@ -96,7 +99,7 @@
             this.panel1.Controls.Add(this.label1);
             this.panel1.Location = new System.Drawing.Point(6, 6);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(200, 101);
+            this.panel1.Size = new System.Drawing.Size(200, 161);
             this.panel1.TabIndex = 0;
             // 
             // curStateTextBox
@@ -139,7 +142,7 @@
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(606, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(649, 24);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -165,9 +168,9 @@
             this.panel2.Controls.Add(this.statesVisualizationPanel);
             this.panel2.Controls.Add(this.panel5);
             this.panel2.Controls.Add(this.panel4);
-            this.panel2.Location = new System.Drawing.Point(6, 113);
+            this.panel2.Location = new System.Drawing.Point(212, 6);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(589, 155);
+            this.panel2.Size = new System.Drawing.Size(423, 161);
             this.panel2.TabIndex = 2;
             // 
             // statesVisualizationPanel
@@ -175,7 +178,7 @@
             this.statesVisualizationPanel.Dock = System.Windows.Forms.DockStyle.Top;
             this.statesVisualizationPanel.Location = new System.Drawing.Point(0, 0);
             this.statesVisualizationPanel.Name = "statesVisualizationPanel";
-            this.statesVisualizationPanel.Size = new System.Drawing.Size(589, 64);
+            this.statesVisualizationPanel.Size = new System.Drawing.Size(423, 64);
             this.statesVisualizationPanel.TabIndex = 5;
             this.statesVisualizationPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.statesVisualizationPanel_Paint);
             // 
@@ -188,7 +191,7 @@
             this.panel5.Controls.Add(this.trackBar1);
             this.panel5.Location = new System.Drawing.Point(1, 66);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(585, 50);
+            this.panel5.Size = new System.Drawing.Size(419, 50);
             this.panel5.TabIndex = 4;
             // 
             // prevStateButton
@@ -203,7 +206,7 @@
             // nextStateButton
             // 
             this.nextStateButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.nextStateButton.Location = new System.Drawing.Point(552, 4);
+            this.nextStateButton.Location = new System.Drawing.Point(386, 4);
             this.nextStateButton.Name = "nextStateButton";
             this.nextStateButton.Size = new System.Drawing.Size(30, 23);
             this.nextStateButton.TabIndex = 2;
@@ -214,10 +217,12 @@
             // 
             this.trackBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.trackBar1.Enabled = false;
             this.trackBar1.Location = new System.Drawing.Point(49, 4);
             this.trackBar1.Name = "trackBar1";
-            this.trackBar1.Size = new System.Drawing.Size(501, 45);
+            this.trackBar1.Size = new System.Drawing.Size(335, 45);
             this.trackBar1.TabIndex = 0;
+            this.trackBar1.Scroll += new System.EventHandler(this.trackBar1_Scroll);
             // 
             // panel4
             // 
@@ -264,7 +269,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(606, 411);
+            this.tabControl1.Size = new System.Drawing.Size(649, 357);
             this.tabControl1.TabIndex = 3;
             // 
             // tabPage1
@@ -274,7 +279,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(598, 385);
+            this.tabPage1.Size = new System.Drawing.Size(641, 331);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Variables";
             // 
@@ -294,8 +299,8 @@
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Panel2.Controls.Add(this.stopOpcServerButton);
             this.splitContainer1.Panel2.Controls.Add(this.startOpcServer);
-            this.splitContainer1.Size = new System.Drawing.Size(592, 379);
-            this.splitContainer1.SplitterDistance = 233;
+            this.splitContainer1.Size = new System.Drawing.Size(635, 325);
+            this.splitContainer1.SplitterDistance = 249;
             this.splitContainer1.TabIndex = 2;
             // 
             // stateVarsListBox
@@ -304,7 +309,7 @@
             this.stateVarsListBox.FormattingEnabled = true;
             this.stateVarsListBox.Location = new System.Drawing.Point(0, 0);
             this.stateVarsListBox.Name = "stateVarsListBox";
-            this.stateVarsListBox.Size = new System.Drawing.Size(233, 379);
+            this.stateVarsListBox.Size = new System.Drawing.Size(249, 325);
             this.stateVarsListBox.TabIndex = 0;
             this.stateVarsListBox.SelectedIndexChanged += new System.EventHandler(this.stateVarsListBox_SelectedIndexChanged);
             // 
@@ -318,7 +323,7 @@
             this.panel3.Controls.Add(this.unsetAsOutputButton);
             this.panel3.Location = new System.Drawing.Point(3, 43);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(40, 213);
+            this.panel3.Size = new System.Drawing.Size(40, 159);
             this.panel3.TabIndex = 4;
             // 
             // setAsInputButton
@@ -344,7 +349,7 @@
             // setAsOutputButton
             // 
             this.setAsOutputButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.setAsOutputButton.Location = new System.Drawing.Point(3, 158);
+            this.setAsOutputButton.Location = new System.Drawing.Point(3, 104);
             this.setAsOutputButton.Name = "setAsOutputButton";
             this.setAsOutputButton.Size = new System.Drawing.Size(32, 23);
             this.setAsOutputButton.TabIndex = 1;
@@ -355,7 +360,7 @@
             // unsetAsOutputButton
             // 
             this.unsetAsOutputButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.unsetAsOutputButton.Location = new System.Drawing.Point(3, 187);
+            this.unsetAsOutputButton.Location = new System.Drawing.Point(3, 133);
             this.unsetAsOutputButton.Name = "unsetAsOutputButton";
             this.unsetAsOutputButton.Size = new System.Drawing.Size(32, 23);
             this.unsetAsOutputButton.TabIndex = 1;
@@ -379,8 +384,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.outputVarsListBox);
-            this.splitContainer2.Size = new System.Drawing.Size(306, 337);
-            this.splitContainer2.SplitterDistance = 153;
+            this.splitContainer2.Size = new System.Drawing.Size(333, 283);
+            this.splitContainer2.SplitterDistance = 128;
             this.splitContainer2.TabIndex = 3;
             // 
             // inputVarsListBox
@@ -389,7 +394,7 @@
             this.inputVarsListBox.FormattingEnabled = true;
             this.inputVarsListBox.Location = new System.Drawing.Point(0, 0);
             this.inputVarsListBox.Name = "inputVarsListBox";
-            this.inputVarsListBox.Size = new System.Drawing.Size(306, 153);
+            this.inputVarsListBox.Size = new System.Drawing.Size(333, 128);
             this.inputVarsListBox.TabIndex = 0;
             // 
             // outputVarsListBox
@@ -398,14 +403,14 @@
             this.outputVarsListBox.FormattingEnabled = true;
             this.outputVarsListBox.Location = new System.Drawing.Point(0, 0);
             this.outputVarsListBox.Name = "outputVarsListBox";
-            this.outputVarsListBox.Size = new System.Drawing.Size(306, 180);
+            this.outputVarsListBox.Size = new System.Drawing.Size(333, 151);
             this.outputVarsListBox.TabIndex = 0;
             // 
             // stopOpcServerButton
             // 
             this.stopOpcServerButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.stopOpcServerButton.Enabled = false;
-            this.stopOpcServerButton.Location = new System.Drawing.Point(126, 351);
+            this.stopOpcServerButton.Location = new System.Drawing.Point(153, 297);
             this.stopOpcServerButton.Name = "stopOpcServerButton";
             this.stopOpcServerButton.Size = new System.Drawing.Size(109, 23);
             this.stopOpcServerButton.TabIndex = 1;
@@ -416,7 +421,7 @@
             // startOpcServer
             // 
             this.startOpcServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.startOpcServer.Location = new System.Drawing.Point(241, 351);
+            this.startOpcServer.Location = new System.Drawing.Point(268, 297);
             this.startOpcServer.Name = "startOpcServer";
             this.startOpcServer.Size = new System.Drawing.Size(109, 23);
             this.startOpcServer.TabIndex = 1;
@@ -427,14 +432,35 @@
             // tabPage2
             // 
             this.tabPage2.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.tabPage2.Controls.Add(this.panel6);
             this.tabPage2.Controls.Add(this.panel1);
             this.tabPage2.Controls.Add(this.panel2);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(598, 531);
+            this.tabPage2.Size = new System.Drawing.Size(641, 331);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Player";
+            // 
+            // panel6
+            // 
+            this.panel6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel6.Controls.Add(this.treeView1);
+            this.panel6.Location = new System.Drawing.Point(6, 173);
+            this.panel6.Name = "panel6";
+            this.panel6.Size = new System.Drawing.Size(629, 152);
+            this.panel6.TabIndex = 3;
+            // 
+            // treeView1
+            // 
+            this.treeView1.Dock = System.Windows.Forms.DockStyle.Left;
+            this.treeView1.Location = new System.Drawing.Point(0, 0);
+            this.treeView1.Name = "treeView1";
+            this.treeView1.Size = new System.Drawing.Size(200, 152);
+            this.treeView1.TabIndex = 0;
+            this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
             // 
             // openFileDialog1
             // 
@@ -454,8 +480,8 @@
             // splitContainer3.Panel2
             // 
             this.splitContainer3.Panel2.Controls.Add(this.messageRichTextBox);
-            this.splitContainer3.Size = new System.Drawing.Size(606, 557);
-            this.splitContainer3.SplitterDistance = 411;
+            this.splitContainer3.Size = new System.Drawing.Size(649, 485);
+            this.splitContainer3.SplitterDistance = 357;
             this.splitContainer3.TabIndex = 4;
             // 
             // messageRichTextBox
@@ -463,7 +489,7 @@
             this.messageRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.messageRichTextBox.Location = new System.Drawing.Point(0, 0);
             this.messageRichTextBox.Name = "messageRichTextBox";
-            this.messageRichTextBox.Size = new System.Drawing.Size(606, 142);
+            this.messageRichTextBox.Size = new System.Drawing.Size(649, 124);
             this.messageRichTextBox.TabIndex = 0;
             this.messageRichTextBox.Text = "";
             // 
@@ -471,7 +497,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(606, 581);
+            this.ClientSize = new System.Drawing.Size(649, 509);
             this.Controls.Add(this.splitContainer3);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
@@ -499,6 +525,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
+            this.panel6.ResumeLayout(false);
             this.splitContainer3.Panel1.ResumeLayout(false);
             this.splitContainer3.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
@@ -546,6 +573,8 @@
         private System.Windows.Forms.Button stopOpcServerButton;
         private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.RichTextBox messageRichTextBox;
+        private System.Windows.Forms.Panel panel6;
+        private System.Windows.Forms.TreeView treeView1;
     }
 }
 

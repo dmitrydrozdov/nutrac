@@ -17,6 +17,9 @@
 using System;
 using System.Configuration;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 
 namespace NSPlugin
@@ -27,7 +30,9 @@ namespace NSPlugin
    //===============================================================================
    public class AppPlugin : GenericServer
    {
-
+       private static Socket ListenningSocket = null;
+       private static Socket PlayerConnectionSocket = null;
+       private static System.Object SocketCSMonitor = new Object(); 
       //-----------------------------------------------------------------
       /// <summary>
       /// This method is called from the generic server EXE at startup.
@@ -64,6 +69,12 @@ namespace NSPlugin
          myThread.Name = "Item Update/Simulation" ;
          myThread.Priority = ThreadPriority.AboveNormal;
          myThread.Start();
+
+         socketConnectionThread = new Thread(new ThreadStart( socketConnectionThreadFunc ));
+         socketConnectionThread.Name = "Socket connection thread";
+         socketConnectionThread.Priority = ThreadPriority.Normal;
+         socketConnectionThread.Start();
+
          return HRESULTS.S_OK;
       }
 
@@ -236,8 +247,12 @@ namespace NSPlugin
       {
          //////////////////  TO-DO  /////////////////
          // close the device communication
-
-         // terminate the simulation thread
+         /*lock (SocketCSMonitor)
+         {
+             if (ListenningSocket != null) ListenningSocket.Close();
+             if (PlayerConnectionSocket != null) PlayerConnectionSocket.Close();
+         }*/
+          // terminate the simulation thread
          StopThread = new ManualResetEvent( false );
          StopThread.WaitOne( 5000, true );
          StopThread.Close();
@@ -628,23 +643,96 @@ namespace NSPlugin
       //----------------------------------------------------------------------------
       // Driver internal signal state buffer. The Item Handle is the array index.
       static Thread              myThread ;
+      static Thread              socketConnectionThread;
       static ManualResetEvent    StopThread = null ;
       static int                 CountConnectedClients ;
       static public ConfigBuilder.ConfigLoader Config = null;
 
- 
 
+       void socketConnectionThreadFunc()
+       {
+           int port = 64700;
+           string server = "localhost";
+
+           ListenningSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+           IPAddress hostIp = Dns.GetHostEntry(server).AddressList[1];
+           IPEndPoint ep = new IPEndPoint(hostIp, port);
+           ListenningSocket.ReceiveTimeout = -1;
+           ListenningSocket.Bind(ep);
+           ListenningSocket.Listen(1);
+
+           while (true)
+           {
+               try
+               {
+                   lock (SocketCSMonitor)
+                   {
+                       if (PlayerConnectionSocket == null || PlayerConnectionSocket.Connected == false)
+                           PlayerConnectionSocket = ListenningSocket.Accept();
+                   }
+               }
+               catch (Exception e)
+               {
+                   StreamWriter sw = new StreamWriter("tracelog.txt", true);
+                   sw.WriteLine("socketConnectionThreadFunc => loop =>" + e.Message);
+                   sw.Close();
+               }
+               //return;
+
+               Thread.Sleep(1000);   // ms
+
+               if (StopThread != null)
+               {
+                   StopThread.Set();
+                   return;               // terminate the thread
+               }
+           }
+       }
       //------------------------------------------------------------
       // Device simulation thread
       void UpdateThread() 
       {
-         short RampInc = 5 ;
+         /*short RampInc = 5 ;
          double SineArg = 0.0 ;
-         Random rand = new Random();
+         Random rand = new Random();*/
          for(;;)   // forever thread loop
-         {   
-            // increment readable items of type Int, Short, Float or Double
-            for( int i=0 ; i<Config.Items.Length ; ++ i )
+         {
+             lock (SocketCSMonitor)
+             {
+                 if (PlayerConnectionSocket != null && PlayerConnectionSocket.Connected)
+                 {
+                     byte[] buf = new byte[256];
+                     int c = PlayerConnectionSocket.Receive(buf);
+                     string data = Encoding.ASCII.GetString(buf);
+
+                     string[] varStrings = data.Split(';');
+                     foreach (string varString in varStrings)
+                     {
+                         string[] varVal = varString.Split('=');
+
+                         int i = Config.findIndexOf(varVal[0]);
+                         try
+                         {
+                             Config.Items[i].Value = Convert.ToBoolean(varVal[1]);
+                         }
+                         catch (FormatException e)
+                         {
+                             Config.Items[i].Value = Convert.ToInt32(varVal[1]);
+                         }
+
+                         // change timestamp of modified item
+                         Config.Items[i].Timestamp = DateTime.UtcNow;
+
+                         // update server cache for this item
+                         SetItemValue(Config.Items[i].handle, Config.Items[i].Value,
+                             (short) Config.Items[i].Quality, DateTime.UtcNow);
+                     }
+                 }
+             }
+
+
+             // increment readable items of type Int, Short, Float or Double
+            /* for( int i=0 ; i<Config.Items.Length ; ++ i )
             {
                if( ( Config.Items[i] != null )
                   && ( Config.Items[i].name.StartsWith( "Simulated" ) )   )
@@ -689,7 +777,7 @@ namespace NSPlugin
                         (short)Config.Items[i].Quality, DateTime.UtcNow);
                   }
                }
-            }
+            }*/
 
             ////sample of a refresh on demand
             //int[] hnd;
@@ -701,8 +789,8 @@ namespace NSPlugin
             //   SetItemValue(Config.Items[ii].handle, Config.Items[ii].Value,
             //      (short)Config.Items[ii].Quality, DateTime.UtcNow);
             //}
-
-            Thread.Sleep( 1000 ) ;   // ms
+             
+            Thread.Sleep( 100 ) ;   // ms
 
             if( StopThread != null )
             {

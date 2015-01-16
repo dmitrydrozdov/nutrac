@@ -24,6 +24,7 @@ namespace Player
         private List<NuTraceVariable> unassignedVars = null;
         private List<NuTraceVariable> inputVars = null;
         private List<NuTraceVariable> outputVars = null;
+        private string selectedFbKey = null;
 
         public Form1()
         {
@@ -67,13 +68,53 @@ namespace Player
                 outputVars = new List<NuTraceVariable>();
 
                 bindLisboxesData();
+                fillFbInstanceTreeView(firstState.Label);
+
 
                 int statesCount = storage.States.Count;
                 statesTotalTextBox.Text = statesCount.ToString();
-                trackBar1.Maximum = statesCount;
+                curStateTextBox.Text = firstState.Label;
+                trackBar1.Maximum = statesCount - 1;
 
             }
         }
+
+        private void fillFbInstanceTreeView(string firstStateLabel)
+        {
+            IEnumerable<NuTraceVariable> BasicFbOsms = storage.Variables.Where(v => v.StateLabel == firstStateLabel && v.Variable.EndsWith("S_smv"));
+
+            foreach (NuTraceVariable osmVar in BasicFbOsms)
+            {
+                string[] splitStrings = osmVar.Variable.Split('.');
+                if (splitStrings.Count() < 2) throw new Exception("Wrong OSM variable format: " + osmVar.Variable);
+
+                //TreeNode curNode = new TreeNode(splitStrings[0]);
+                string key = "";
+                for (int i = 0; i < splitStrings.Count()-1; i++)
+                {
+
+                    TreeNode parent = null;
+                    if (key != "") parent = treeView1.Nodes.Find(key, true).FirstOrDefault();
+                    key += splitStrings[i] + ".";
+                    TreeNode curNode = treeView1.Nodes.Find(key, true).FirstOrDefault();
+
+                    if (curNode != null && i < splitStrings.Count() - 2) continue;
+                    else if (curNode != null && i == splitStrings.Count() - 2) throw new Exception("Invalid data format!");
+
+                    if (parent != null)
+                    {
+                        parent.Nodes.Add(key, splitStrings[i]);
+                    }
+                    else
+                    {
+                        if (i == 0) treeView1.Nodes.Add(key, splitStrings[i]);
+                        else throw new Exception("Invalid data format!");
+                    }
+                }
+            }
+        }
+
+        //private TreeNode createTreeNode(List<string> strings) { }
 
         private void stateVarsListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -134,26 +175,37 @@ namespace Player
         {
             splitContainer3.Panel2Collapsed = false;
 
-            /*IPHostEntry hostEntry = Dns.GetHostEntry("localhost");
-            int port = 64700;
-
-            foreach (IPAddress ipAddress in hostEntry.AddressList)
-            {
-                IPEndPoint ep = new IPEndPoint(ipAddress, port);
-                Socket tmpSocket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                try
-                {
-                    tmpSocket.Connect(ep);
-                }
-                catch (Exception exception) { }
-                if (tmpSocket.Connected)
-                {
-                    s = tmpSocket;
-                    break;
-                }
-            }*/
             writeOpcServerConfig("DANSrv.Items.xml");
             _startOpcServer();
+
+
+            string server = "localhost";
+            int port = 64700;
+            TraceMessage(String.Format("Openning socket connection to OPC Server {0}:{1} ", server, port));
+
+            IPHostEntry hostEntry = Dns.GetHostEntry(server); //TODO: changable address and port
+            while (s == null || (!s.Connected))
+            {
+                foreach (IPAddress ipAddress in hostEntry.AddressList)
+                {
+                    IPEndPoint ep = new IPEndPoint(ipAddress, port);
+                    Socket tmpSocket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    try
+                    {
+                        tmpSocket.Connect(ep);
+                    }
+                    catch (Exception exception)
+                    {
+                    }
+                    if (tmpSocket.Connected)
+                    {
+                        s = tmpSocket;
+                        TraceMessage("Connected!");
+                        trackBar1.Enabled = true;
+                        break;
+                    }
+                }
+            }
 
             stopOpcServerButton.Enabled = true;
             startOpcServer.Enabled = false;
@@ -162,6 +214,11 @@ namespace Player
             s.Send(Encoding.ASCII.GetBytes("s2"));
             s.Send(Encoding.ASCII.GetBytes("s3"));
             s.Send(Encoding.ASCII.GetBytes("END"));*/
+        }
+
+        private void TraceMessage(string message)
+        {
+            messageRichTextBox.Text += message + "\n";
         }
 
         private void runExternalTool(string execFile, string parameters)
@@ -280,7 +337,11 @@ namespace Player
                             branchConfig.dataTypeSpecified = false;
                             branchConfig.qualitySpecified = true;
                             branchConfig.quality = OPCQuality.GOOD;
+
                             branchConfig.signalTypeSpecified = false;
+                            //branchConfig.signalTypeSpecified = true;
+                            //branchConfig.signalType = SignalType.INTERN;
+
                             branchConfig.scanRate = 100;
                             branchConfig.scanRateSpecified = true;
                             branchConfig.deviceIDSpecified = false;
@@ -312,10 +373,13 @@ namespace Player
                                     element.itemDefs.dataType = drvtypes.Type.BOOLEAN;
                                 }
                                 element.itemDefs.activeDef = true;
-                                element.itemDefs.accRightSpecified = false;
+                                element.itemDefs.accRightSpecified = true;
+                                element.itemDefs.accRight = OPCAccess.READWRITEABLE;
                                 
                                 element.itemDefs.dataTypeSpecified = true;
-                                element.itemDefs.qualitySpecified = false;
+                                element.itemDefs.qualitySpecified = true;
+                                element.itemDefs.quality = OPCQuality.GOOD;
+
                                 element.itemDefs.signalTypeSpecified = false;
                                 element.itemDefs.scanRateSpecified = false;
                                 element.itemDefs.deviceIDSpecified = false;
@@ -323,6 +387,16 @@ namespace Player
                                 element.itemDefs.deviceSubAddrSpecified = false;
                                 element.itemDefs.user1Specified = false;
                                 element.itemDefs.user2Specified = false;
+
+                                /*element.itemDefs.properties = new PropertyDef[1];
+                                {
+                                    element.itemDefs.properties[0] = new PropertyDef();
+                                    element.itemDefs.properties[0].id = 101;
+                                    element.itemDefs.properties[0].name = "Item Description";
+                                    element.itemDefs.properties[0].dataType = drvtypes.Type.STRING;
+                                    element.itemDefs.properties[0].val = "Property test";
+
+                                }*/
 
                             }
                             root.subBranches[0].items[i++] = element;
@@ -349,9 +423,50 @@ namespace Player
 
         private void stopOpcServerButton_Click(object sender, EventArgs e)
         {
+            s.Close();
             _stopOpcServer();
             stopOpcServerButton.Enabled = false;
             startOpcServer.Enabled = true;
+            trackBar1.Enabled = false;
+        }
+
+        private void trackBar1_Scroll(object sender, EventArgs e)
+        {
+            int stateNum = trackBar1.Value;
+            NuTraceState curState = storage.States[stateNum];
+            foreach (NuTraceVariable inputVar in inputVars)
+            {
+                NuTraceVariable curStateVar = storage.Variables.FirstOrDefault(v => v.StateLabel == curState.Label && v.Variable == inputVar.Variable);
+                string varString = String.Format("{0}={1}", curStateVar.Variable, curStateVar.Value);
+
+                if (s != null && s.Connected)
+                {
+                    s.Send(Encoding.ASCII.GetBytes(varString));
+                }
+                else
+                {
+                    trackBar1.Enabled = false;
+                    TraceMessage("Connection lost!");
+                    tabPage1.Show();
+                }
+            }
+
+            curStateTextBox.Text = curState.Label;
+        }
+
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            selectedFbKey = treeView1.SelectedNode.Name;
+            refreshFbShownData();
+        }
+
+        private void refreshFbShownData()
+        {
+            if(selectedFbKey == null || selectedFbKey == "" || curStateTextBox.Text == "") return;
+
+            var fbVariables = storage.Variables.Where(v => v.StateLabel == curStateTextBox.Text && v.Variable.StartsWith(selectedFbKey));
+            
+            NuTraceVariable osmVariable = fbVariables.First(v => v.Variable.EndsWith("S_smv"));
         }
     }
 }
