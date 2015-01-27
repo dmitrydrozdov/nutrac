@@ -1262,7 +1262,7 @@ namespace NSPlugin
       
       //------------------------------------------------------- DA Item configuration
       static internal SrvRegDef                  DAServerDef ;
-      static internal string                     TraceLog = null;
+      static internal string                     TraceLog = "tracelog.txt";
 
 
 

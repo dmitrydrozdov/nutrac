@@ -30,6 +30,42 @@ namespace NuTrace
                 }
             }
         }
+
+        public void Expand()
+        {
+            Dictionary<string, string> VarsDict = new Dictionary<string, string>();
+            List<string> varsList = new List<string>();
+            bool firstState = true;
+            foreach (NuTraceState state in States)
+            {
+                if (firstState)
+                {
+                    foreach (NuTraceVariable variable in Variables.Where(v=>v.StateLabel==state.Label))
+                    {
+
+                        VarsDict.Add(variable.Variable, variable.Value);
+                        varsList.Add(variable.Variable);
+                    }
+                    firstState = false;
+                }
+                else
+                {
+                    foreach (string varName in varsList)
+                    {
+                        NuTraceVariable curVariable = Variables.FirstOrDefault(v => v.StateLabel == state.Label && v.Variable == varName);
+                        if (curVariable != null)
+                        {
+                            VarsDict[varName] = curVariable.Value;
+                        }
+                        else
+                        {
+                            string lastValue = VarsDict[varName];
+                            Variables.Add(new NuTraceVariable(varName, lastValue, state.Label));
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public class NuTraceState

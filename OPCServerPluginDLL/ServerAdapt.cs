@@ -17,6 +17,7 @@
 using System;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -51,6 +52,7 @@ namespace NSPlugin
       /// <returns>HRESULTS error/success Code</returns>
       new public int CreateServerItems( string cmdParams ) 
       {
+
          if( TraceLog != null )
             LogFile.Write( "CreateServerItems" );
          
@@ -668,14 +670,20 @@ namespace NSPlugin
                    lock (SocketCSMonitor)
                    {
                        if (PlayerConnectionSocket == null || PlayerConnectionSocket.Connected == false)
+                       {
+                           if (TraceLog != null)
+                               LogFile.Write("Socket connected!");
                            PlayerConnectionSocket = ListenningSocket.Accept();
+                       }
                    }
                }
                catch (Exception e)
                {
-                   StreamWriter sw = new StreamWriter("tracelog.txt", true);
-                   sw.WriteLine("socketConnectionThreadFunc => loop =>" + e.Message);
-                   sw.Close();
+                   if (TraceLog != null)
+                       LogFile.Write("socketConnectionThreadFunc => loop =>" + e.Message);
+                   //StreamWriter sw = new StreamWriter("tracelog.txt", true);
+                   //sw.WriteLine("socketConnectionThreadFunc => loop =>" + e.Message);
+                   //sw.Close();
                }
                //return;
 
@@ -683,8 +691,15 @@ namespace NSPlugin
 
                if (StopThread != null)
                {
-                   StopThread.Set();
-                   return;               // terminate the thread
+                   try
+                   {
+                       StopThread.Set();
+                       return; // terminate the thread
+                   }
+                   catch (Exception e)
+                   {
+                       if (TraceLog != null) LogFile.Write("socketConnectionThreadFunc => terminate =>" + e.Message);
+                   }
                }
            }
        }
@@ -695,13 +710,14 @@ namespace NSPlugin
          /*short RampInc = 5 ;
          double SineArg = 0.0 ;
          Random rand = new Random();*/
+         //StreamWriter sw = new StreamWriter("datatrace.txt", true);
          for(;;)   // forever thread loop
          {
              lock (SocketCSMonitor)
              {
                  if (PlayerConnectionSocket != null && PlayerConnectionSocket.Connected)
                  {
-                     byte[] buf = new byte[256];
+                     byte[] buf = new byte[2048];
                      int c = PlayerConnectionSocket.Receive(buf);
                      string data = Encoding.ASCII.GetString(buf);
 
@@ -709,8 +725,11 @@ namespace NSPlugin
                      foreach (string varString in varStrings)
                      {
                          string[] varVal = varString.Split('=');
-
+                         if (varVal.Count() != 2) continue;
                          int i = Config.findIndexOf(varVal[0]);
+
+                         if (TraceLog != null) LogFile.Write(varString);
+
                          try
                          {
                              Config.Items[i].Value = Convert.ToBoolean(varVal[1]);
@@ -718,6 +737,10 @@ namespace NSPlugin
                          catch (FormatException e)
                          {
                              Config.Items[i].Value = Convert.ToInt32(varVal[1]);
+                         }
+                         catch (Exception e)
+                         {
+                             if (TraceLog != null) LogFile.Write("UpdateThread => varupdateError =>" + e.Message);
                          }
 
                          // change timestamp of modified item
@@ -794,8 +817,15 @@ namespace NSPlugin
 
             if( StopThread != null )
             {
-               StopThread.Set();
-               return;               // terminate the thread
+                try
+                {
+                    StopThread.Set();
+                    return; // terminate the thread
+                }
+                catch (Exception e)
+                {
+                    if (TraceLog != null) LogFile.Write("UpdateThread => terminate =>" + e.Message);
+                }
             }
          }
       }

@@ -61,6 +61,7 @@ namespace Player
                 inputFile.Close();
 
                 storage = new Storage(parcedData);
+                storage.Expand();
 
                 NuTraceState firstState = storage.States.First();
                 unassignedVars = storage.Variables.Where(v => v.StateLabel == firstState.Label).ToList();
@@ -76,6 +77,7 @@ namespace Player
                 curStateTextBox.Text = firstState.Label;
                 trackBar1.Maximum = statesCount - 1;
 
+                trackBar1.Enabled = true; //TODO: modify
             }
         }
 
@@ -301,7 +303,7 @@ namespace Player
                     defaultBranchConfig.user2Specified = false;
                     root.branchDefs = defaultBranchConfig;
 
-                    /*ItemElement dummyItem = new ItemElement();
+                    ItemElement dummyItem = new ItemElement();
                     {
                         dummyItem.name = "dummyItem";
                         dummyItem.handle = 0;
@@ -322,7 +324,7 @@ namespace Player
                         dummyItem.itemDefs.user2Specified = false;
                     }
                     root.items = new ItemElement[1];
-                    root.items[0] = dummyItem;*/
+                    root.items[0] = dummyItem;
                     
                     if (inputVars != null)
                     {
@@ -427,31 +429,45 @@ namespace Player
             _stopOpcServer();
             stopOpcServerButton.Enabled = false;
             startOpcServer.Enabled = true;
-            trackBar1.Enabled = false;
+            //trackBar1.Enabled = false;
         }
 
         private void trackBar1_Scroll(object sender, EventArgs e)
+        {
+            refreshState();
+        }
+
+        private void refreshState()
         {
             int stateNum = trackBar1.Value;
             NuTraceState curState = storage.States[stateNum];
             foreach (NuTraceVariable inputVar in inputVars)
             {
                 NuTraceVariable curStateVar = storage.Variables.FirstOrDefault(v => v.StateLabel == curState.Label && v.Variable == inputVar.Variable);
-                string varString = String.Format("{0}={1}", curStateVar.Variable, curStateVar.Value);
+                string varString = String.Format("{0}.{1}={2};", "Inputs", curStateVar.Variable, curStateVar.Value);
 
                 if (s != null && s.Connected)
                 {
-                    s.Send(Encoding.ASCII.GetBytes(varString));
+                    try
+                    {
+                        s.Send(Encoding.ASCII.GetBytes(varString));
+                    }
+                    catch (SocketException e)
+                    {
+                        TraceMessage(e.Message);
+                    }
                 }
                 else
                 {
-                    trackBar1.Enabled = false;
+                    //trackBar1.Enabled = false;
                     TraceMessage("Connection lost!");
                     tabPage1.Show();
                 }
             }
 
             curStateTextBox.Text = curState.Label;
+
+            refreshFbShownData();
         }
 
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
@@ -466,7 +482,39 @@ namespace Player
 
             var fbVariables = storage.Variables.Where(v => v.StateLabel == curStateTextBox.Text && v.Variable.StartsWith(selectedFbKey));
             
-            NuTraceVariable osmVariable = fbVariables.First(v => v.Variable.EndsWith("S_smv"));
+            NuTraceVariable osmVariable = fbVariables.FirstOrDefault(v => v.Variable.EndsWith("S_smv"));
+            if (osmVariable != null)
+            {
+                if (osmVariable.Value == "s0_osm") osmPictureBox.Image = Properties.Resources.osm_0;
+                if (osmVariable.Value == "s1_osm") osmPictureBox.Image = Properties.Resources.osm_1;
+                if (osmVariable.Value == "s2_osm") osmPictureBox.Image = Properties.Resources.osm_2;
+            }
+            else
+            {
+                osmPictureBox.Image = Properties.Resources.osm_empty;
+            }
+
+            NuTraceVariable eccVariable = fbVariables.FirstOrDefault(v => v.Variable.EndsWith("Q_smv"));
+            if (eccVariable != null)
+            {
+                ecStateTextBox.Text = eccVariable.Value;
+            }
+            else
+            {
+                ecStateTextBox.Text = "";
+            }
+        }
+
+        private void nextStateButton_Click(object sender, EventArgs e)
+        {
+            if (trackBar1.Value < trackBar1.Maximum) trackBar1.Value++;
+            refreshState();
+        }
+
+        private void prevStateButton_Click(object sender, EventArgs e)
+        {
+            if (trackBar1.Value > trackBar1.Minimum) trackBar1.Value--;
+            refreshState();
         }
     }
 }

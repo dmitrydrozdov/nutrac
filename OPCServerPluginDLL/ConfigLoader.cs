@@ -24,6 +24,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
 using System.Reflection;
+using NSPlugin;
 
 
 namespace ConfigBuilder
@@ -414,6 +415,7 @@ namespace ConfigBuilder
          int rtc = 0 ;
          foreach( ItemData item in Items )
          {
+            //LogFile.Write("Item" + item.name);
             int sRate = -1 ;                       // assume undefined
             if( item.itemDefs.scanRateSpecified )
                sRate = item.itemDefs.scanRate ;
