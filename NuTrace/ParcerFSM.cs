@@ -19,7 +19,7 @@ namespace NuTrace
         private string _lastReadString;
         public readonly Regex CounterexampleBeginRegex = new Regex(@"-- specification\s*(.*)\s*is\s*(\w*)");
         public readonly Regex StateRegex = new Regex(@"->\s+State:\s((\d|\.)+)\s+<-");
-        public readonly Regex VariableRegex = new Regex(@"((\w|\.)+)\s=\s(\w+)");
+        public readonly Regex VariableRegex = new Regex(@"((\w|\.)+)\s=\s((\w|-)+)");
 
         public readonly TextReader InStream;
         public readonly Queue<Object> OutQueue;

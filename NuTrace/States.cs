@@ -212,6 +212,7 @@ namespace NuTrace
             if (_fsm.VariableReached) _fsm.EnterState(this);
             else if (_fsm.StateReached) _fsm.EnterState(new LoopState(_fsm));
             else if (_fsm.EndReached) _fsm.EnterState(new CounterexampleEnd(_fsm));
+            else if (_fsm.LoopBeginReached) _fsm.EnterState(new CounterexampleEnd(_fsm)); // Loop repeat
         }
         public override void Exit()
         { }
