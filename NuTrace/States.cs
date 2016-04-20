@@ -35,18 +35,21 @@ namespace NuTrace
             Match m = _fsm.CounterexampleBeginRegex.Match(_fsm.LastReadString);
             _fsm.OutQueue.Enqueue(new CounterexampleData(m.Groups[1].Value, m.Groups[2].Value));
 
-            _fsm.ReadNextLine();
+            //_fsm.ReadNextLine();
         }
 
         public override void Do()
         {
-            if (_fsm.CommentLine1Reached) _fsm.EnterState(new CommentLine1(_fsm));
-            else _fsm.EnterState(new Fault(_fsm));
+            /*if (_fsm.CommentLine1Reached) _fsm.EnterState(new CommentLine1(_fsm));
+            else _fsm.EnterState(new Fault(_fsm));*/
+            _fsm.ReadNextLine();
+            if (_fsm.CommentLine3Reached) _fsm.EnterState(new CommentLine3(_fsm));
+            else if (_fsm.EndReached) _fsm.EnterState(new Fault(_fsm));
         }
         public override void Exit()
         { }
     }
-    class CommentLine1 : ParcerState {
+    /*class CommentLine1 : ParcerState {
         public CommentLine1(ParcerFSM fsm) : base(fsm)
         {
         }
@@ -61,8 +64,8 @@ namespace NuTrace
         }
         public override void Exit()
         { }
-    }
-    class CommentLine2 : ParcerState
+    }*/
+    /*class CommentLine2 : ParcerState
     {
         public CommentLine2(ParcerFSM fsm)
             : base(fsm)
@@ -79,7 +82,7 @@ namespace NuTrace
         }
         public override void Exit()
         { }
-    }
+    }*/
     class CommentLine3 : ParcerState
     {
         public CommentLine3(ParcerFSM fsm)

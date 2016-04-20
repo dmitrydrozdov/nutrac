@@ -12,14 +12,15 @@ namespace NuTrace
     {
         //workspace
         public const string CommentLine1 = "-- as demonstrated by the following execution sequence";
-        public const string CommentLine2 = "Trace Description: BMC Counterexample ";
-        public const string CommentLine3 = "Trace Type: Counterexample ";
-        public const string LoopBeginLine = "-- Loop starts here";
+        public const string CommentLine2 = "Trace Description: BMC Counterexample";
+        public const string CommentLine3 = "Trace Type: Counterexample";
+        //public const string LoopBeginLine = "-- Loop starts here";
 
         private string _lastReadString;
         public readonly Regex CounterexampleBeginRegex = new Regex(@"-- specification\s*(.*)\s*is\s*(\w*)");
         public readonly Regex StateRegex = new Regex(@"->\s+State:\s((\d|\.)+)\s+<-");
         public readonly Regex VariableRegex = new Regex(@"((\w|\.)+)\s=\s((\w|-)+)");
+        public readonly Regex LoopBeginRegex = new Regex(@"\s*--\s*(Loop starts here)");
 
         public readonly TextReader InStream;
         public readonly Queue<Object> OutQueue;
@@ -30,12 +31,13 @@ namespace NuTrace
 
         public bool EndReached
         {
-            get { return (_lastReadString == "NuSMV > "); }
+            get { return (_lastReadString == null || _lastReadString == "NuSMV >" || _lastReadString == "nuXmv >"); }
         }
         public bool CounterexampleBeginReached
         {
             get
             {
+                if (_lastReadString == null) return false;
                 return (CounterexampleBeginRegex.Match(_lastReadString).Success);
             }
         }
@@ -43,6 +45,7 @@ namespace NuTrace
         {
             get
             {
+                if (_lastReadString == null) return false;
                 return (StateRegex.Match(_lastReadString).Success);
             }
         }
@@ -50,6 +53,7 @@ namespace NuTrace
         {
             get
             {
+                if (_lastReadString == null) return false;
                 return (VariableRegex.Match(_lastReadString).Success);
             }
         }
@@ -57,13 +61,15 @@ namespace NuTrace
         {
             get
             {
-                return (_lastReadString == LoopBeginLine);
+                if (_lastReadString == null) return false;
+                return (LoopBeginRegex.Match(_lastReadString).Success);
             }
         }
-        public bool CommentLine1Reached
+        /*public bool CommentLine1Reached
         {
             get
             {
+                if (_lastReadString == null) return false;
                 return (_lastReadString == CommentLine1);
             }
         }
@@ -71,13 +77,15 @@ namespace NuTrace
         {
             get
             {
+                if (_lastReadString == null) return false;
                 return (_lastReadString == CommentLine2);
             }
-        }
+        }*/
         public bool CommentLine3Reached
         {
             get
             {
+                if (_lastReadString == null) return false;
                 return (_lastReadString == CommentLine3);
             }
         }
@@ -96,6 +104,7 @@ namespace NuTrace
         public string ReadNextLine()
         {
             _lastReadString = InStream.ReadLine();
+            if (_lastReadString != null) _lastReadString.Trim();
             return _lastReadString;
         }
 
