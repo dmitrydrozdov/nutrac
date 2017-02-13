@@ -10,7 +10,7 @@ namespace nutrac
 {
     class Program
     {
-        private static string Separator = ";";
+        private static string Separator = ",";
 
         static void Main(string[] args)
         {

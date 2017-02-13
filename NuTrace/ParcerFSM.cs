@@ -13,13 +13,13 @@ namespace NuTrace
         //workspace
         public const string CommentLine1 = "-- as demonstrated by the following execution sequence";
         public const string CommentLine2 = "Trace Description: BMC Counterexample";
-        public const string CommentLine3 = "Trace Type: Counterexample";
+        public const string CommentLine3 = "Trace Type: Counterexample ";
         //public const string LoopBeginLine = "-- Loop starts here";
 
         private string _lastReadString;
         public readonly Regex CounterexampleBeginRegex = new Regex(@"-- specification\s*(.*)\s*is\s*(\w*)");
         public readonly Regex StateRegex = new Regex(@"->\s+State:\s((\d|\.)+)\s+<-");
-        public readonly Regex VariableRegex = new Regex(@"((\w|\.)+)\s=\s((\w|-)+)");
+        public readonly Regex VariableRegex = new Regex(@"((\w|\.|\[|\])+)\s=\s((\w|-)+)");
         public readonly Regex LoopBeginRegex = new Regex(@"\s*--\s*(Loop starts here)");
 
         public readonly TextReader InStream;
